@@ -58,9 +58,35 @@ class Main:
                                    font=('Consolas', 15, 'bold'))
         self.msg_input = Text(self.root, bg=self.bgcolor, fg='white', height=1, font=('Consolas', 15, 'bold'),
                               insertbackground='white', bd=3, width=67)
+        self.slider_container = Frame(self.root, bg='#949494', width=10, height=360)
+        self.slider_height = 356
+        self.slider = Frame(self.slider_container, bg=self.bgcolor, width=6, height=self.slider_height)
+        self.handle_scollbar_movement()
         # Start app
         threading.Thread(target=lambda: asyncio.run(self.join())).start()
         self.root.mainloop()
+
+    def handle_scollbar_movement(self):
+        def on_drag_start(event):
+            def on_drag_motion(event):
+                widget = event.widget
+                y = widget.winfo_y() - drag_y + event.y
+                if y >= 359 - self.slider_height:
+                    widget.place(y=358 - self.slider_height)
+                elif y <= 1:
+                    widget.place(y=2)
+                else:
+                    #self.frame.tag_delete('highlight')
+                    self.frame.see(round((y/10), 0)+1)
+                    #self.frame.tag_add("highlight", (round((y/10), 0)))
+                    #self.frame.tag_config("highlight", background="grey")
+                    widget.place(y=y)
+
+            widget = event.widget
+            drag_y = event.y
+            widget.bind("<B1-Motion>", on_drag_motion)
+
+        self.slider.bind("<Button-1>", on_drag_start)
 
     def exit(self):
         # stop app
@@ -100,6 +126,14 @@ class Main:
         self.root.bind('<Return>', func=lambda event: asyncio.run(send_un()))
 
     async def add_message(self, msg):
+        try:
+            self.frame.delete(31)
+        except:
+            pass
+        if not self.slider_height <= 40:
+            self.slider_height -= 10
+        self.slider.place(x=2, y=358 - self.slider_height)
+        self.slider.config(height=self.slider_height)
         self.frame.configure(state='normal')
         self.frame.insert(END, f'{msg}\n')
         self.frame.configure(state='disabled')
@@ -114,7 +148,9 @@ class Main:
             self.frame.place(x=40, y=65)
             self.message_label.place(x=25, y=394)
             self.msg_input.place(x=25, y=420)
-            # self.users_list.place(x=600, y=25)
+            self.slider_container.place(x=580, y=35)
+            self.slider.place(x=2, y=358 - self.slider_height)
+            self.users_list.place(x=600, y=25)
 
     async def Main(self):
         # get username and destroy widget

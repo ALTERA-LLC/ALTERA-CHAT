@@ -76,6 +76,8 @@ class Main:
     async def send(self, msg, client=None, destination=None):
         async def broadcast():
             if not msg.startswith('sys_htas2789'):
+                if len(self.messages) == 30:
+                    self.messages.remove(self.messages[0])
                 self.messages.append(msg)
             if not len(self.clients):
                 print('Main-thread: No one is in the chat not broadcasting message')
